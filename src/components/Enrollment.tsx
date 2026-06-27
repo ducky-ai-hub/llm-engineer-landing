@@ -1,12 +1,36 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, MonitorPlay, Zap, ArrowRight, Check, X } from 'lucide-react';
+import Turnstile from './Turnstile';
 
 export default function Enrollment() {
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '';
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [formError, setFormError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+
+  const handleTurnstileError = useCallback((message: string) => {
+    setTurnstileToken("");
+    setFormError(message);
+  }, []);
+
+  const handleTurnstileExpire = useCallback(() => {
+    setTurnstileToken("");
+    setFormError("Phiên xác minh CAPTCHA đã hết hạn. Vui lòng xác minh lại.");
+  }, []);
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+    setFormError("");
+  }, []);
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setTurnstileToken("");
+    setFormError("");
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,6 +44,18 @@ export default function Enrollment() {
       setIsSuccess(true);
       return;
     }
+
+    if (!turnstileSiteKey) {
+      setFormError("Chưa cấu hình VITE_TURNSTILE_SITE_KEY.");
+      return;
+    }
+
+    if (!turnstileToken) {
+      setFormError("Vui lòng hoàn tất xác minh CAPTCHA.");
+      return;
+    }
+
+    formData.set('cf-turnstile-response', turnstileToken);
 
     // Frontend validation
     const email = formData.get('email') as string;
@@ -72,6 +108,7 @@ export default function Enrollment() {
       // With no-cors, we assume success if no network error is thrown
       setIsSuccess(true);
       setFormError("");
+      setTurnstileToken("");
       form.reset();
     } catch (error) {
       console.error(error);
@@ -155,7 +192,9 @@ export default function Enrollment() {
                         <p className="text-zinc-400 text-sm">Điền thông tin để tham gia khoá học</p>
                       </div>
                       <button 
-                        onClick={() => setIsFormOpen(false)}
+                        type="button"
+                        onClick={closeForm}
+                        aria-label="Đóng form đăng ký"
                         className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-zinc-100"
                       >
                         <X size={20} />
@@ -170,7 +209,7 @@ export default function Enrollment() {
                         <h4 className="text-xl font-bold mb-2">Đăng ký thành công!</h4>
                         <p className="text-zinc-400 text-sm">Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để hoàn tất thủ tục.</p>
                         <button 
-                          onClick={() => { setIsFormOpen(false); setIsSuccess(false); }}
+                          onClick={() => { closeForm(); setIsSuccess(false); }}
                           className="mt-8 px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm font-medium transition-colors"
                         >
                           Quay lại
@@ -212,9 +251,22 @@ export default function Enrollment() {
                           <textarea id="note" name="note" rows={2} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none text-sm" placeholder="Bạn có câu hỏi hay mong muốn gì cho khoá học?"></textarea>
                         </div>
 
+                        {turnstileSiteKey ? (
+                          <Turnstile
+                            siteKey={turnstileSiteKey}
+                            onError={handleTurnstileError}
+                            onExpire={handleTurnstileExpire}
+                            onVerify={handleTurnstileVerify}
+                          />
+                        ) : (
+                          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-sm">
+                            Chưa cấu hình CAPTCHA.
+                          </div>
+                        )}
+
                         <button 
                           type="submit" 
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || !turnstileToken}
                           className="w-full mt-auto py-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                           {isSubmitting ? (

@@ -5,6 +5,7 @@ services:
       context: .
       args:
         VITE_GOOGLE_SCRIPT_URL: ${VITE_GOOGLE_SCRIPT_URL:-}
+        VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY:-}
     ports:
       - "${APP_PORT:-7500}:3000"
     restart: unless-stopped

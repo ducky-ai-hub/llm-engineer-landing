@@ -127,5 +127,5 @@ export default function Turnstile({
     };
   }, [onError, onExpire, onVerify, siteKey]);
 
-  return <div ref={containerRef} className="min-h-[65px]" />;
+  return <div ref={containerRef} className="absolute h-0 w-0" />;
 }

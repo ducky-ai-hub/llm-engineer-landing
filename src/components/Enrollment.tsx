@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, MonitorPlay, Zap, ArrowRight, Check, X } from 'lucide-react';
 import Turnstile from './Turnstile';
 
 export default function Enrollment() {
   const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '';
+  const pricingCardRef = useRef<HTMLDivElement>(null);
+  const [lockedCardHeight, setLockedCardHeight] = useState<number>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -30,6 +32,16 @@ export default function Enrollment() {
     setIsFormOpen(false);
     setTurnstileToken("");
     setFormError("");
+  };
+
+  const openForm = () => {
+    const cardHeight = pricingCardRef.current?.getBoundingClientRect().height;
+
+    if (cardHeight) {
+      setLockedCardHeight(cardHeight);
+    }
+
+    setIsFormOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -168,11 +180,17 @@ export default function Enrollment() {
           {/* Pricing Card Side */}
           <div className="lg:col-span-2">
             <motion.div
+              ref={pricingCardRef}
               id="pricing-card"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
+              style={
+                lockedCardHeight === undefined
+                  ? undefined
+                  : { height: lockedCardHeight }
+              }
               className="bg-zinc-900 border-2 border-cyan-500/20 rounded-3xl p-8 relative overflow-hidden h-full flex flex-col scroll-mt-24 min-h-[500px]"
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
@@ -216,7 +234,7 @@ export default function Enrollment() {
                         </button>
                       </div>
                     ) : (
-                      <form onSubmit={handleSubmit} className="flex-grow flex flex-col space-y-4">
+                      <form onSubmit={handleSubmit} className="flex-grow flex flex-col gap-3">
                         <input type="hidden" name="subject" value="Đăng ký mới từ khoá học LLM Engineer" />
                         
                         {/* Honeypot field - Hidden from users, bots will fill it */}
@@ -246,7 +264,7 @@ export default function Enrollment() {
                           <input required type="tel" id="phone" name="phone" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder="Số điện thoại liên hệ..." />
                         </div>
 
-                        <div className="pb-4">
+                        <div>
                           <label htmlFor="note" className="block text-sm font-medium text-zinc-300 mb-1">Ghi chú thêm</label>
                           <textarea id="note" name="note" rows={2} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none text-sm" placeholder="Bạn có câu hỏi hay mong muốn gì cho khoá học?"></textarea>
                         </div>
@@ -287,6 +305,15 @@ export default function Enrollment() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
+                    onAnimationComplete={(definition) => {
+                      if (
+                        typeof definition === 'object' &&
+                        !Array.isArray(definition) &&
+                        definition.opacity === 1
+                      ) {
+                        setLockedCardHeight(undefined);
+                      }
+                    }}
                     className="flex flex-col h-full"
                   >
                     <div className="mb-8">
@@ -321,7 +348,7 @@ export default function Enrollment() {
                     </div>
 
                     <button 
-                      onClick={() => setIsFormOpen(true)}
+                      onClick={openForm}
                       className="w-full mt-auto py-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
                       Đăng ký ngay

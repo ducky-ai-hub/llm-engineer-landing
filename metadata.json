@@ -1,6 +1,0 @@
-{
-  "name": "LLM Engineer Thực Chiến",
-  "description": "Trang landing page khoá học LLM Engineer Thực Chiến dành cho builder, software engineer và người làm sản phẩm.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

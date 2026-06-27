@@ -1,20 +1,32 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# LLM Engineer Thực Chiến
 
-# Run and deploy your AI Studio app
+Landing page cho khóa học LLM Engineer Thực Chiến, xây dựng bằng React, Vite và Tailwind CSS.
 
-This contains everything you need to run your app locally.
+## Chạy local
 
-View your app in AI Studio: https://ai.studio/apps/925d5025-1869-4afe-a75e-8725f4e8a716
+Yêu cầu: Node.js 24 và Yarn 1.x.
 
-## Run Locally
+```bash
+cp .env.example .env
+yarn install --frozen-lockfile
+yarn dev
+```
 
-**Prerequisites:**  Node.js
+Ứng dụng chạy tại `http://localhost:3000`.
 
+Đặt `VITE_GOOGLE_SCRIPT_URL` trong `.env` thành URL Google Apps Script Web App để form đăng ký hoạt động.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Chạy bằng Docker
+
+```bash
+cp .env.example .env
+docker compose up --build -d
+```
+
+Ứng dụng chạy tại `http://localhost:7500`. Cổng host được đọc từ biến `APP_PORT` trong `.env`:
+
+```bash
+APP_PORT=8080 docker compose up --build -d
+```
+
+`VITE_GOOGLE_SCRIPT_URL` được đưa vào bundle tại thời điểm build. Sau khi thay đổi giá trị, cần build lại image.

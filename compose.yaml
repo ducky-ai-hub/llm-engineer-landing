@@ -1,0 +1,10 @@
+services:
+  web:
+    image: llm-engineer-bootcamp-landing-page:local
+    build:
+      context: .
+      args:
+        VITE_GOOGLE_SCRIPT_URL: ${VITE_GOOGLE_SCRIPT_URL:-}
+    ports:
+      - "${APP_PORT:-7500}:3000"
+    restart: unless-stopped

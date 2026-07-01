@@ -73,6 +73,8 @@ function loadTurnstile(): Promise<TurnstileApi> {
 
 type TurnstileProps = {
   siteKey: string;
+  verificationError: string;
+  loadError: string;
   onError: (message: string) => void;
   onExpire: () => void;
   onVerify: (token: string) => void;
@@ -80,6 +82,8 @@ type TurnstileProps = {
 
 export default function Turnstile({
   siteKey,
+  verificationError,
+  loadError,
   onError,
   onExpire,
   onVerify,
@@ -108,13 +112,13 @@ export default function Turnstile({
           callback: onVerify,
           'expired-callback': onExpire,
           'error-callback': (errorCode) => {
-            onError(`Không thể xác minh CAPTCHA (${errorCode}). Vui lòng thử lại.`);
+            onError(verificationError.replace('{code}', errorCode));
           },
         });
       })
       .catch(() => {
         if (!cancelled) {
-          onError('Không thể tải CAPTCHA. Vui lòng kiểm tra kết nối và thử lại.');
+          onError(loadError);
         }
       });
 
@@ -125,7 +129,7 @@ export default function Turnstile({
         window.turnstile.remove(widgetId);
       }
     };
-  }, [onError, onExpire, onVerify, siteKey]);
+  }, [loadError, onError, onExpire, onVerify, siteKey, verificationError]);
 
   return <div ref={containerRef} className="absolute h-0 w-0" />;
 }

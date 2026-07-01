@@ -1,8 +1,12 @@
 import { motion } from 'motion/react';
 import { Terminal, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useI18n } from '../i18n/useI18n';
+import { getSampleLessonUrl } from '../config/links';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Header() {
+  const { locale, t } = useI18n();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -43,32 +47,34 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
         <a 
           href="#" 
-          onClick={(e) => scrollTo(e, 'hero')} // we need to add id="hero" to Hero.tsx or just scroll to top
+          onClick={(e) => scrollTo(e, 'hero')}
+          aria-label={t.header.homeLabel}
           className="flex items-center gap-2 text-cyan-500 hover:text-cyan-400 transition-colors"
         >
           <Terminal size={24} />
-          <span className="font-bold text-zinc-100 hidden sm:block">LLME</span>
+          <span className="font-bold text-zinc-100 hidden sm:block">{t.header.brand}</span>
         </a>
 
-        <nav className="flex items-center gap-4 sm:gap-6 text-sm font-medium">
-          <a href="#audience" onClick={(e) => scrollTo(e, 'audience')} className="text-zinc-200 hover:text-cyan-400 transition-colors">Dành cho ai</a>
-          <a href="#why-course" onClick={(e) => scrollTo(e, 'why-course')} className="text-zinc-200 hover:text-cyan-400 transition-colors hidden sm:block">Vì sao chọn</a>
-          <a href="#curriculum" onClick={(e) => scrollTo(e, 'curriculum')} className="text-zinc-200 hover:text-cyan-400 transition-colors">Chương trình</a>
+        <nav className="flex items-center gap-2 sm:gap-4 lg:gap-6 text-sm font-medium">
+          <a href="#audience" onClick={(e) => scrollTo(e, 'audience')} className="text-zinc-200 hover:text-cyan-400 transition-colors hidden md:block">{t.header.audience}</a>
+          <a href="#why-course" onClick={(e) => scrollTo(e, 'why-course')} className="text-zinc-200 hover:text-cyan-400 transition-colors hidden lg:block">{t.header.whyCourse}</a>
+          <a href="#curriculum" onClick={(e) => scrollTo(e, 'curriculum')} className="text-zinc-200 hover:text-cyan-400 transition-colors hidden sm:block">{t.header.curriculum}</a>
           <a 
-            href="https://llme-preview.ducky-ai.com"
+            href={getSampleLessonUrl(locale)}
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-cyan-400 bg-cyan-950/30 border border-cyan-500/20 hover:bg-cyan-900/50 hover:text-cyan-300 transition-colors"
           >
-            Bài học mẫu
+            {t.header.sampleLesson}
             <ExternalLink size={14} />
           </a>
+          <LanguageSwitcher />
           <a 
             href="#pricing-card" 
             onClick={(e) => scrollTo(e, 'pricing-card')}
             className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 rounded-lg transition-colors font-semibold"
           >
-            Đăng ký
+            {t.header.enroll}
           </a>
         </nav>
       </div>

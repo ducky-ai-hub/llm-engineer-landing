@@ -1,9 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, MonitorPlay, Zap, ArrowRight, Check, X } from 'lucide-react';
 import Turnstile from './Turnstile';
+import { useI18n } from '../i18n/useI18n';
 
 export default function Enrollment() {
+  const { locale, t } = useI18n();
   const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '';
   const pricingCardRef = useRef<HTMLDivElement>(null);
   const [lockedCardHeight, setLockedCardHeight] = useState<number>();
@@ -13,6 +15,10 @@ export default function Enrollment() {
   const [formError, setFormError] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
 
+  useEffect(() => {
+    setFormError("");
+  }, [locale]);
+
   const handleTurnstileError = useCallback((message: string) => {
     setTurnstileToken("");
     setFormError(message);
@@ -20,8 +26,8 @@ export default function Enrollment() {
 
   const handleTurnstileExpire = useCallback(() => {
     setTurnstileToken("");
-    setFormError("Phiên xác minh CAPTCHA đã hết hạn. Vui lòng xác minh lại.");
-  }, []);
+    setFormError(t.enrollment.errors.captchaExpired);
+  }, [t.enrollment.errors.captchaExpired]);
 
   const handleTurnstileVerify = useCallback((token: string) => {
     setTurnstileToken(token);
@@ -58,12 +64,12 @@ export default function Enrollment() {
     }
 
     if (!turnstileSiteKey) {
-      setFormError("Chưa cấu hình VITE_TURNSTILE_SITE_KEY.");
+      setFormError(t.enrollment.errors.missingSiteKey);
       return;
     }
 
     if (!turnstileToken) {
-      setFormError("Vui lòng hoàn tất xác minh CAPTCHA.");
+      setFormError(t.enrollment.errors.captchaRequired);
       return;
     }
 
@@ -73,7 +79,7 @@ export default function Enrollment() {
     const email = formData.get('email') as string;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setFormError("Email không hợp lệ. Vui lòng kiểm tra lại.");
+      setFormError(t.enrollment.errors.invalidEmail);
       return;
     }
 
@@ -81,7 +87,7 @@ export default function Enrollment() {
     const cleanPhone = phone.replace(/[\s\-\.]/g, '');
     const phoneRegex = /^\+?[0-9]{8,15}$/;
     if (!phoneRegex.test(cleanPhone)) {
-      setFormError("Số điện thoại không hợp lệ. Vui lòng điền từ 8-15 số (có thể chứa mã vùng bắt đầu bằng +).");
+      setFormError(t.enrollment.errors.invalidPhone);
       return;
     }
 
@@ -99,7 +105,7 @@ export default function Enrollment() {
     
     try {
       if (scriptUrl === "YOUR_GOOGLE_SCRIPT_WEB_APP_URL" || !scriptUrl) {
-        setFormError("Vui lòng cấu hình VITE_GOOGLE_SCRIPT_URL trong file .env hoặc thay URL trực tiếp vào code (ở Enrollment.tsx).");
+        setFormError(t.enrollment.errors.missingScriptUrl);
         setIsSubmitting(false);
         return;
       }
@@ -124,7 +130,7 @@ export default function Enrollment() {
       form.reset();
     } catch (error) {
       console.error(error);
-      setFormError("Không thể kết nối. Vui lòng kiểm tra lại mạng.");
+      setFormError(t.enrollment.errors.network);
     } finally {
       setIsSubmitting(false);
     }
@@ -145,34 +151,34 @@ export default function Enrollment() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-3xl font-bold mb-6">Hình thức & Yêu cầu</h2>
+              <h2 className="text-3xl font-bold mb-6">{t.enrollment.infoTitle}</h2>
               
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
                 <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl">
                   <MonitorPlay className="text-cyan-400 mb-3" />
-                  <h3 className="font-semibold mb-1">Học trực tuyến</h3>
-                  <p className="text-sm text-zinc-400">24 buổi học trực tiếp qua Zoom, chia làm 8 modules.</p>
+                  <h3 className="font-semibold mb-1">{t.enrollment.formats[0].title}</h3>
+                  <p className="text-sm text-zinc-400">{t.enrollment.formats[0].description}</p>
                 </div>
                 <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl">
                   <Calendar className="text-cyan-400 mb-3" />
-                  <h3 className="font-semibold mb-1">Thực hành liên tục</h3>
-                  <p className="text-sm text-zinc-400">Có bài thực hành trong từng module và 1 capstone project cuối khoá.</p>
+                  <h3 className="font-semibold mb-1">{t.enrollment.formats[1].title}</h3>
+                  <p className="text-sm text-zinc-400">{t.enrollment.formats[1].description}</p>
                 </div>
                 <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl sm:col-span-2 flex items-start gap-4">
                   <Zap className="text-cyan-400 shrink-0 mt-1" />
                   <div>
-                    <h3 className="font-semibold mb-1">Mentoring dài hạn</h3>
-                    <p className="text-sm text-zinc-400">Giảng viên hỗ trợ 1:1 trong quá trình học và mentoring miễn phí thêm 3 tháng sau khi kết thúc khoá học.</p>
+                    <h3 className="font-semibold mb-1">{t.enrollment.formats[2].title}</h3>
+                    <p className="text-sm text-zinc-400">{t.enrollment.formats[2].description}</p>
                   </div>
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold mb-4">Yêu cầu đầu vào</h3>
+              <h3 className="text-xl font-bold mb-4">{t.enrollment.requirementsTitle}</h3>
               <p className="text-zinc-400 leading-relaxed mb-4">
-                Học viên nên có nền tảng cơ bản về lập trình. Bạn không nhất thiết phải là AI/ML engineer. Khoá học được thiết kế cho application engineer và builder muốn xây dựng ứng dụng LLM thực tế.
+                {t.enrollment.requirements}
               </p>
               <p className="text-zinc-500 text-sm italic">
-                * Với học viên chưa có nền tảng kỹ thuật, có thể theo học khoá ngắn hạn Pre-Engineer trước khi tham gia chương trình chính.
+                {t.enrollment.requirementsNote}
               </p>
             </motion.div>
           </div>
@@ -206,13 +212,13 @@ export default function Enrollment() {
                   >
                     <div className="mb-6 flex items-center justify-between">
                       <div>
-                        <h3 className="text-2xl font-bold mb-1">Thông tin đăng ký</h3>
-                        <p className="text-zinc-400 text-sm">Điền thông tin để tham gia khoá học</p>
+                        <h3 className="text-2xl font-bold mb-1">{t.enrollment.form.title}</h3>
+                        <p className="text-zinc-400 text-sm">{t.enrollment.form.subtitle}</p>
                       </div>
                       <button 
                         type="button"
                         onClick={closeForm}
-                        aria-label="Đóng form đăng ký"
+                        aria-label={t.enrollment.form.closeLabel}
                         className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-zinc-100"
                       >
                         <X size={20} />
@@ -224,22 +230,22 @@ export default function Enrollment() {
                         <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mb-4 border border-emerald-500/20">
                           <Check size={32} />
                         </div>
-                        <h4 className="text-xl font-bold mb-2">Đăng ký thành công!</h4>
-                        <p className="text-zinc-400 text-sm">Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để hoàn tất thủ tục.</p>
+                        <h4 className="text-xl font-bold mb-2">{t.enrollment.form.successTitle}</h4>
+                        <p className="text-zinc-400 text-sm">{t.enrollment.form.successMessage}</p>
                         <button 
                           onClick={() => { closeForm(); setIsSuccess(false); }}
                           className="mt-8 px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-sm font-medium transition-colors"
                         >
-                          Quay lại
+                          {t.enrollment.form.back}
                         </button>
                       </div>
                     ) : (
                       <form onSubmit={handleSubmit} className="flex-grow flex flex-col gap-3">
-                        <input type="hidden" name="subject" value="Đăng ký mới từ khoá học LLM Engineer" />
+                        <input type="hidden" name="subject" value={t.enrollment.form.subject} />
                         
                         {/* Honeypot field - Hidden from users, bots will fill it */}
                         <div className="hidden" aria-hidden="true">
-                          <label htmlFor="botcheck">Đừng điền vào trường này nếu bạn là người</label>
+                          <label htmlFor="botcheck">{t.enrollment.form.honeypot}</label>
                           <input type="text" name="botcheck" id="botcheck" />
                         </div>
 
@@ -250,35 +256,37 @@ export default function Enrollment() {
                         )}
                         
                         <div>
-                          <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-1">Họ và tên *</label>
-                          <input required type="text" id="name" name="name" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder="Nhập họ và tên..." />
+                          <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-1">{t.enrollment.form.nameLabel}</label>
+                          <input required type="text" id="name" name="name" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder={t.enrollment.form.namePlaceholder} />
                         </div>
                         
                         <div>
-                          <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1">Email *</label>
-                          <input required type="email" id="email" name="email" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder="Địa chỉ email..." />
+                          <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1">{t.enrollment.form.emailLabel}</label>
+                          <input required type="email" id="email" name="email" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder={t.enrollment.form.emailPlaceholder} />
                         </div>
 
                         <div>
-                          <label htmlFor="phone" className="block text-sm font-medium text-zinc-300 mb-1">Số điện thoại *</label>
-                          <input required type="tel" id="phone" name="phone" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder="Số điện thoại liên hệ..." />
+                          <label htmlFor="phone" className="block text-sm font-medium text-zinc-300 mb-1">{t.enrollment.form.phoneLabel}</label>
+                          <input required type="tel" id="phone" name="phone" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder={t.enrollment.form.phonePlaceholder} />
                         </div>
 
                         <div>
-                          <label htmlFor="note" className="block text-sm font-medium text-zinc-300 mb-1">Ghi chú thêm</label>
-                          <textarea id="note" name="note" rows={2} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none text-sm" placeholder="Bạn có câu hỏi hay mong muốn gì cho khoá học?"></textarea>
+                          <label htmlFor="note" className="block text-sm font-medium text-zinc-300 mb-1">{t.enrollment.form.noteLabel}</label>
+                          <textarea id="note" name="note" rows={2} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none text-sm" placeholder={t.enrollment.form.notePlaceholder}></textarea>
                         </div>
 
                         {turnstileSiteKey ? (
                           <Turnstile
                             siteKey={turnstileSiteKey}
+                            verificationError={t.enrollment.errors.captchaVerification}
+                            loadError={t.enrollment.errors.captchaLoad}
                             onError={handleTurnstileError}
                             onExpire={handleTurnstileExpire}
                             onVerify={handleTurnstileVerify}
                           />
                         ) : (
                           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-sm">
-                            Chưa cấu hình CAPTCHA.
+                            {t.enrollment.form.captchaNotConfigured}
                           </div>
                         )}
 
@@ -290,10 +298,10 @@ export default function Enrollment() {
                           {isSubmitting ? (
                             <span className="flex items-center gap-2">
                               <span className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></span>
-                              Đang gửi...
+                              {t.enrollment.form.submitting}
                             </span>
                           ) : (
-                            "Gửi đăng ký"
+                            t.enrollment.form.submit
                           )}
                         </button>
                       </form>
@@ -317,29 +325,23 @@ export default function Enrollment() {
                     className="flex flex-col h-full"
                   >
                     <div className="mb-8">
-                      <h3 className="text-2xl font-bold mb-2">Đăng ký khoá học</h3>
-                      <p className="text-zinc-400 text-sm">Bắt đầu xây dựng thế hệ ứng dụng AI-first tiếp theo.</p>
+                      <h3 className="text-2xl font-bold mb-2">{t.enrollment.pricing.title}</h3>
+                      <p className="text-zinc-400 text-sm">{t.enrollment.pricing.subtitle}</p>
                     </div>
 
                     <div className="mb-8">
-                      <div className="text-zinc-500 line-through mb-1">20.000.000 VNĐ</div>
+                      <div className="text-zinc-500 line-through mb-1">{t.enrollment.pricing.originalPrice}</div>
                       <div className="flex items-end gap-2">
-                        <span className="text-4xl font-bold text-zinc-100">16.000.000</span>
-                        <span className="text-zinc-400 font-medium mb-1">VNĐ</span>
+                        <span className="text-4xl font-bold text-zinc-100">{t.enrollment.pricing.price}</span>
+                        <span className="text-zinc-400 font-medium mb-1">{t.enrollment.pricing.currency}</span>
                       </div>
                       <div className="inline-block mt-3 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full border border-emerald-500/20">
-                        Ưu đãi hiện tại
+                        {t.enrollment.pricing.offer}
                       </div>
                     </div>
 
                     <div className="space-y-4 mb-8 flex-grow">
-                      {[
-                        "Nền tảng vững chắc về LLM application engineering",
-                        "Khả năng tự thiết kế và xây LLM-based app end-to-end",
-                        "Capstone MVP cho portfolio",
-                        "Tư duy production-readiness thực chiến",
-                        "Mentoring 3 tháng sau khoá học"
-                      ].map((item, i) => (
+                      {t.enrollment.pricing.benefits.map((item, i) => (
                         <div key={i} className="flex gap-3 text-sm text-zinc-300">
                           <Check size={18} className="text-cyan-500 shrink-0" />
                           <span>{item}</span>
@@ -351,7 +353,7 @@ export default function Enrollment() {
                       onClick={openForm}
                       className="w-full mt-auto py-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
-                      Đăng ký ngay
+                      {t.enrollment.pricing.enrollNow}
                       <ArrowRight size={18} />
                     </button>
                   </motion.div>

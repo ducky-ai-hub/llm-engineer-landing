@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Terminal, ArrowRight } from 'lucide-react';
+import { useI18n } from '../i18n/useI18n';
 
 export default function Hero() {
+  const { t } = useI18n();
   const [typedCount, setTypedCount] = useState(0);
-  const fullText = "Production-Ready LLM Course";
+  const fullText = t.hero.badge;
 
   useEffect(() => {
     let i = 0;
     let timeoutId: number;
+    setTypedCount(0);
 
     const typeChar = () => {
       i++;
@@ -24,7 +27,7 @@ export default function Hero() {
     timeoutId = window.setTimeout(typeChar, 500);
 
     return () => clearTimeout(timeoutId);
-  }, []);
+  }, [fullText]);
 
   return (
     <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden px-4">
@@ -54,7 +57,10 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-5xl md:text-7xl font-bold tracking-tight mb-6"
         >
-          LLM Engineer <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Thực Chiến</span>
+          {t.hero.title}{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+            {t.hero.titleHighlight}
+          </span>
         </motion.h1>
 
         <motion.p
@@ -63,7 +69,7 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-xl md:text-2xl text-zinc-400 mb-8 max-w-3xl mx-auto font-medium"
         >
-          Build LLM Apps từ gốc đến production
+          {t.hero.subtitle}
         </motion.p>
 
         <motion.p
@@ -72,7 +78,7 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-lg text-zinc-400 mb-12 max-w-2xl mx-auto leading-relaxed"
         >
-          Không chỉ học cách viết prompt hay ráp framework. Khoá học giúp bạn hiểu cách một LLM application thật sự được thiết kế, xây dựng, đánh giá và vận hành. Từ đó, bạn biết cách kiểm soát trade-off kỹ thuật, không bị framework che mờ bản chất, và đưa sản phẩm tiến gần production.
+          {t.hero.description}
         </motion.p>
 
         <motion.div
@@ -85,14 +91,14 @@ export default function Hero() {
             href="#pricing-card"
             className="w-full sm:w-auto px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            Đăng ký khoá học
+            {t.hero.enroll}
             <ArrowRight size={18} />
           </a>
           <a
             href="#curriculum"
             className="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-800 font-semibold rounded-lg transition-colors flex items-center justify-center"
           >
-            Xem chương trình học
+            {t.hero.viewCurriculum}
           </a>
         </motion.div>
       </div>
@@ -104,28 +110,24 @@ export default function Hero() {
         className="max-w-4xl mx-auto mt-24 p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 backdrop-blur-sm"
       >
         <h3 className="text-xl md:text-2xl font-semibold mb-6 text-center leading-relaxed flex flex-wrap items-center justify-center gap-2">
-          <span>Từ</span>
-          <span className="px-3 py-1 bg-zinc-800 text-zinc-200 rounded-lg text-base md:text-lg font-mono tracking-tight">chatbot demo</span>
-          <span>đến</span>
-          <span className="px-3 py-1 bg-cyan-500/15 text-cyan-400 rounded-lg text-base md:text-lg">LLM product chạy được trong thực tế</span>
+          <span>{t.hero.journeyPrefix}</span>
+          <span className="px-3 py-1 bg-zinc-800 text-zinc-200 rounded-lg text-base md:text-lg font-mono tracking-tight">{t.hero.journeyStart}</span>
+          <span>{t.hero.journeyConnector}</span>
+          <span className="px-3 py-1 bg-cyan-500/15 text-cyan-400 rounded-lg text-base md:text-lg">{t.hero.journeyEnd}</span>
         </h3>
         <p className="text-zinc-400 mb-6 text-center">
-          Một demo AI có thể được dựng trong vài giờ. Nhưng để biến nó thành một LLM-based application đáng tin cậy, có thể debug, đo lường, kiểm soát chi phí và vận hành với người dùng thật, bạn cần nhiều hơn prompt hay framework.
+          {t.hero.journeyDescription}
         </p>
         <div className="grid md:grid-cols-2 gap-6 text-sm text-zinc-400">
           <ul className="space-y-3">
-            <li className="flex gap-2"><span className="text-red-400">✗</span> Vì sao hệ thống hallucinate dù đã “prompt rất kỹ”?</li>
-            <li className="flex gap-2"><span className="text-red-400">✗</span> Vì sao output drift sau mỗi lần đổi model/prompt?</li>
-            <li className="flex gap-2"><span className="text-red-400">✗</span> Vì sao RAG vẫn trả lời sai dù đã đưa tài liệu vào vector DB?</li>
-            <li className="flex gap-2"><span className="text-red-400">✗</span> Vì sao tool calling có thể gọi sai, gọi thừa hoặc gây rủi ro?</li>
-            <li className="flex gap-2"><span className="text-red-400">✗</span> Vì sao chi phí và latency tăng vọt?</li>
+            {t.hero.problems.map((item) => (
+              <li key={item} className="flex gap-2"><span className="text-red-400">✗</span> {item}</li>
+            ))}
           </ul>
           <ul className="space-y-3">
-            <li className="flex gap-2"><span className="text-green-400">✓</span> Khi nào chỉ cần prompt, khi nào cần RAG?</li>
-            <li className="flex gap-2"><span className="text-green-400">✓</span> Khi nào workflow tốt hơn agent tự do?</li>
-            <li className="flex gap-2"><span className="text-green-400">✓</span> Khi nào fine-tuning là đúng hướng — và khi nào là sai hướng?</li>
-            <li className="flex gap-2"><span className="text-green-400">✓</span> Khi nào cần structured output, validation và retry thay vì free-form text?</li>
-            <li className="flex gap-2"><span className="text-green-400">✓</span> Khi nào cần eval, guardrails, tracing và rollback trước khi nghĩ đến production?</li>
+            {t.hero.decisions.map((item) => (
+              <li key={item} className="flex gap-2"><span className="text-green-400">✓</span> {item}</li>
+            ))}
           </ul>
         </div>
       </motion.div>
